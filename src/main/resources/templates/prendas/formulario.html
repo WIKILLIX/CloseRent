@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar Prenda - CloseRent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">CloseRent</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Registrar Nueva Prenda</h2>
+
+        <form th:action="@{/prendas/guardar}" method="post" id="formPrenda">
+            <div class="mb-3">
+                <label for="tipoPrenda" class="form-label">Tipo de Prenda</label>
+                <select class="form-control" id="tipoPrenda" name="tipoPrenda" required onchange="mostrarCampos()">
+                    <option value="">Seleccione...</option>
+                    <option value="VESTIDO_DAMA">Vestido de Dama</option>
+                    <option value="TRAJE_CABALLERO">Traje de Caballero</option>
+                    <option value="DISFRAZ">Disfraz</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="referencia" class="form-label">Referencia</label>
+                <input type="text" class="form-control" id="referencia" name="referencia" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="color" class="form-label">Color</label>
+                <input type="text" class="form-control" id="color" name="color" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="marca" class="form-label">Marca</label>
+                <input type="text" class="form-control" id="marca" name="marca" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="talla" class="form-label">Talla</label>
+                <input type="text" class="form-control" id="talla" name="talla" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="valorAlquiler" class="form-label">Valor Alquiler</label>
+                <input type="number" step="0.01" class="form-control" id="valorAlquiler"
+                       name="valorAlquiler" required>
+            </div>
+
+            <div id="camposVestidoDama" style="display:none;">
+                <h4>Detalles Vestido de Dama</h4>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="tienePedreria" name="tienePedreria">
+                        <label class="form-check-label" for="tienePedreria">Tiene Pedrería</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="esLargo" name="esLargo">
+                        <label class="form-check-label" for="esLargo">Es Largo</label>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="cantidadPiezas" class="form-label">Cantidad de Piezas</label>
+                    <input type="number" class="form-control" id="cantidadPiezas" name="cantidadPiezas">
+                </div>
+            </div>
+
+            <div id="camposTrajeCaballero" style="display:none;">
+                <h4>Detalles Traje de Caballero</h4>
+                <div class="mb-3">
+                    <label for="tipoTraje" class="form-label">Tipo de Traje</label>
+                    <select class="form-control" id="tipoTraje" name="tipoTraje">
+                        <option th:each="tipo : ${tiposTraje}" th:value="${tipo}" th:text="${tipo}"></option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="accesorioCuello" class="form-label">Accesorio de Cuello</label>
+                    <select class="form-control" id="accesorioCuello" name="accesorioCuello">
+                        <option th:each="acc : ${accesoriosCuello}" th:value="${acc}" th:text="${acc}"></option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="camposDisfraz" style="display:none;">
+                <h4>Detalles Disfraz</h4>
+                <div class="mb-3">
+                    <label for="nombreDisfraz" class="form-label">Nombre del Disfraz</label>
+                    <input type="text" class="form-control" id="nombreDisfraz" name="nombreDisfraz">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="/prendas" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+
+    <script>
+        function mostrarCampos() {
+            var tipo = document.getElementById('tipoPrenda').value;
+            document.getElementById('camposVestidoDama').style.display = 'none';
+            document.getElementById('camposTrajeCaballero').style.display = 'none';
+            document.getElementById('camposDisfraz').style.display = 'none';
+
+            if (tipo === 'VESTIDO_DAMA') {
+                document.getElementById('camposVestidoDama').style.display = 'block';
+            } else if (tipo === 'TRAJE_CABALLERO') {
+                document.getElementById('camposTrajeCaballero').style.display = 'block';
+            } else if (tipo === 'DISFRAZ') {
+                document.getElementById('camposDisfraz').style.display = 'block';
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

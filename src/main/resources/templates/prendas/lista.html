@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Prendas - CloseRent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">CloseRent</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Catálogo de Prendas</h2>
+
+        <div th:if="${mensaje}" th:class="'alert alert-' + ${tipoMensaje == 'success' ? 'success' : 'danger'}">
+            <span th:text="${mensaje}"></span>
+        </div>
+
+        <div class="mb-3">
+            <a href="/prendas/nuevo" class="btn btn-primary">Nueva Prenda</a>
+            <a href="/" class="btn btn-secondary">Volver al Inicio</a>
+        </div>
+
+        <form action="/prendas/consultar-por-talla" method="get" class="mb-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="talla" placeholder="Buscar por talla" required>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-info">Buscar</button>
+                </div>
+            </div>
+        </form>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Referencia</th>
+                    <th>Tipo</th>
+                    <th>Color</th>
+                    <th>Marca</th>
+                    <th>Talla</th>
+                    <th>Valor Alquiler</th>
+                    <th>Disponible</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="prenda : ${prendas}">
+                    <td th:text="${prenda.referencia}"></td>
+                    <td th:text="${prenda.tipoPrenda}"></td>
+                    <td th:text="${prenda.color}"></td>
+                    <td th:text="${prenda.marca}"></td>
+                    <td th:text="${prenda.talla}"></td>
+                    <td th:text="${'$' + prenda.valorAlquiler}"></td>
+                    <td>
+                        <span th:if="${prenda.disponible}" class="badge bg-success">Disponible</span>
+                        <span th:unless="${prenda.disponible}" class="badge bg-danger">No Disponible</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Prendas por Talla - CloseRent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">CloseRent</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Prendas Talla: <span th:text="${talla}"></span></h2>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Referencia</th>
+                    <th>Tipo</th>
+                    <th>Color</th>
+                    <th>Marca</th>
+                    <th>Valor Alquiler</th>
+                    <th>Información</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="prenda : ${prendas}">
+                    <td th:text="${prenda.referencia}"></td>
+                    <td th:text="${prenda.tipoPrenda}"></td>
+                    <td th:text="${prenda.color}"></td>
+                    <td th:text="${prenda.marca}"></td>
+                    <td th:text="${'$' + prenda.valorAlquiler}"></td>
+                    <td th:text="${prenda.getInfo()}"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <a href="/prendas" class="btn btn-secondary">Volver</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

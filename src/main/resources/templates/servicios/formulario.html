@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuevo Servicio - CloseRent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">CloseRent</a>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Registrar Nuevo Servicio de Alquiler</h2>
+
+        <form th:action="@{/servicios/guardar}" method="post">
+            <div class="mb-3">
+                <label for="clienteId" class="form-label">Cliente</label>
+                <select class="form-control" id="clienteId" name="clienteId" required>
+                    <option value="">Seleccione un cliente...</option>
+                    <option th:each="cliente : ${clientes}"
+                            th:value="${cliente.numeroIdentificacion}"
+                            th:text="${cliente.numeroIdentificacion + ' - ' + cliente.nombre}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="empleadoId" class="form-label">Empleado</label>
+                <select class="form-control" id="empleadoId" name="empleadoId" required>
+                    <option value="">Seleccione un empleado...</option>
+                    <option th:each="empleado : ${empleados}"
+                            th:value="${empleado.numeroIdentificacion}"
+                            th:text="${empleado.numeroIdentificacion + ' - ' + empleado.nombre}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="fechaAlquiler" class="form-label">Fecha de Alquiler</label>
+                <input type="date" class="form-control" id="fechaAlquiler" name="fechaAlquiler" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="referenciasPrendas" class="form-label">Referencias de Prendas (separadas por comas)</label>
+                <textarea class="form-control" id="referenciasPrendas" name="referenciasPrendas"
+                          rows="3" placeholder="Ej: REF001, REF002, REF003" required></textarea>
+                <small class="form-text text-muted">
+                    Prendas disponibles:
+                    <span th:each="prenda, iterStat : ${prendas}">
+                        <span th:text="${prenda.referencia}"></span>
+                        <span th:if="${!iterStat.last}">, </span>
+                    </span>
+                </small>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="/servicios" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
