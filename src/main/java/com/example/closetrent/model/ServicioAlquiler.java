@@ -1,5 +1,7 @@
 package com.example.closetrent.model;
 
+import com.example.closetrent.model.strategy.CostoNormal;
+import com.example.closetrent.model.strategy.CostoStrategy;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +13,7 @@ import java.util.List;
 
 /**
  * Clase que representa un servicio de alquiler de prendas.
+ * Implementa el patrón Strategy para el cálculo del costo.
  */
 @Entity
 @Table(name = "servicios_alquiler")
@@ -47,6 +50,13 @@ public class ServicioAlquiler {
     private List<Prenda> prendas = new ArrayList<>();
 
     /**
+     * Patrón Strategy: Estrategia de cálculo de costo.
+     * No se persiste en BD (transient).
+     */
+    @Transient
+    private CostoStrategy costoStrategy = new CostoNormal();
+
+    /**
      * Constructor sin el número de servicio (generado automáticamente).
      */
     public ServicioAlquiler(LocalDate fechaSolicitud, LocalDate fechaAlquiler,
@@ -56,6 +66,21 @@ public class ServicioAlquiler {
         this.empleado = empleado;
         this.cliente = cliente;
         this.prendas = prendas != null ? prendas : new ArrayList<>();
+        this.costoStrategy = new CostoNormal(); // Estrategia por defecto
+    }
+
+    /**
+     * Constructor con estrategia de costo personalizada.
+     */
+    public ServicioAlquiler(LocalDate fechaSolicitud, LocalDate fechaAlquiler,
+                           Empleado empleado, Cliente cliente, List<Prenda> prendas,
+                           CostoStrategy costoStrategy) {
+        this.fechaSolicitud = fechaSolicitud;
+        this.fechaAlquiler = fechaAlquiler;
+        this.empleado = empleado;
+        this.cliente = cliente;
+        this.prendas = prendas != null ? prendas : new ArrayList<>();
+        this.costoStrategy = costoStrategy != null ? costoStrategy : new CostoNormal();
     }
 
     /**
@@ -69,11 +94,22 @@ public class ServicioAlquiler {
     }
 
     /**
-     * Calcula el valor total del alquiler.
+     * Calcula el valor total del alquiler usando el patrón Strategy.
+     * Delega el cálculo a la estrategia configurada.
      */
     public Double calcularValorTotal() {
-        return prendas.stream()
-                .mapToDouble(Prenda::getValorAlquiler)
-                .sum();
+        if (costoStrategy == null) {
+            costoStrategy = new CostoNormal();
+        }
+        return costoStrategy.calcularValor(prendas);
+    }
+
+    /**
+     * Establece la estrategia de cálculo de costo.
+     *
+     * @param costoStrategy La estrategia a utilizar
+     */
+    public void setCostoStrategy(CostoStrategy costoStrategy) {
+        this.costoStrategy = costoStrategy != null ? costoStrategy : new CostoNormal();
     }
 }

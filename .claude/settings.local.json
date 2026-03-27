@@ -4,7 +4,8 @@
       "Bash(./mvnw clean:*)",
       "Bash(java -version:*)",
       "Bash(export JAVA_HOME=\"/c/Program Files/Java/jdk-17\")",
-      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")"
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(./mvnw test:*)"
     ],
     "deny": [],
     "ask": []

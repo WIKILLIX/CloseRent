@@ -1,10 +1,14 @@
 package com.example.closetrent.service;
 
+import com.example.closetrent.exception.OperacionNoPermitidaException;
+import com.example.closetrent.exception.RecursoNoEncontradoException;
+import com.example.closetrent.exception.RecursoYaExisteException;
 import com.example.closetrent.model.*;
 import com.example.closetrent.model.decorator.IPrendaDecorator;
 import com.example.closetrent.repository.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,12 +61,27 @@ public class NegocioAlquiler {
 
     /**
      * Registra un nuevo cliente.
+     *
+     * @throws RecursoYaExisteException si ya existe un cliente con ese número de identificación
      */
     @Transactional
     public Cliente registrarCliente(String numeroId, String nombre, String direccion,
                                    String telefono, String correo) {
-        Cliente cliente = new Cliente(numeroId, nombre, direccion, telefono, correo);
-        return clienteRepository.save(cliente);
+        // Verificar si ya existe un cliente con ese ID
+        if (clienteRepository.existsById(numeroId)) {
+            throw new RecursoYaExisteException("cliente", numeroId);
+        }
+
+        try {
+            Cliente cliente = new Cliente(numeroId, nombre, direccion, telefono, correo);
+            return clienteRepository.save(cliente);
+        } catch (DataIntegrityViolationException e) {
+            // Capturar errores de integridad de datos (ej: duplicados)
+            if (e.getMessage().contains("Duplicate entry") || e.getMessage().contains("duplicate key")) {
+                throw new RecursoYaExisteException("cliente", numeroId, e);
+            }
+            throw new OperacionNoPermitidaException("No se pudo registrar el cliente. Verifique que los datos sean válidos.", e);
+        }
     }
 
     /**
@@ -83,12 +102,26 @@ public class NegocioAlquiler {
 
     /**
      * Registra un nuevo empleado.
+     *
+     * @throws RecursoYaExisteException si ya existe un empleado con ese número de identificación
      */
     @Transactional
     public Empleado registrarEmpleado(String numeroId, String nombre, String direccion,
                                      String telefono, String correo, String cargo) {
-        Empleado empleado = new Empleado(numeroId, nombre, direccion, telefono, correo, cargo);
-        return empleadoRepository.save(empleado);
+        // Verificar si ya existe un empleado con ese ID
+        if (empleadoRepository.existsById(numeroId)) {
+            throw new RecursoYaExisteException("empleado", numeroId);
+        }
+
+        try {
+            Empleado empleado = new Empleado(numeroId, nombre, direccion, telefono, correo, cargo);
+            return empleadoRepository.save(empleado);
+        } catch (DataIntegrityViolationException e) {
+            if (e.getMessage().contains("Duplicate entry") || e.getMessage().contains("duplicate key")) {
+                throw new RecursoYaExisteException("empleado", numeroId, e);
+            }
+            throw new OperacionNoPermitidaException("No se pudo registrar el empleado. Verifique que los datos sean válidos.", e);
+        }
     }
 
     /**
@@ -109,10 +142,24 @@ public class NegocioAlquiler {
 
     /**
      * Registra una nueva prenda.
+     *
+     * @throws RecursoYaExisteException si ya existe una prenda con esa referencia
      */
     @Transactional
     public Prenda registrarPrenda(Prenda prenda) {
-        return prendaRepository.save(prenda);
+        // Verificar si ya existe una prenda con esa referencia
+        if (prendaRepository.existsById(prenda.getReferencia())) {
+            throw new RecursoYaExisteException("prenda", prenda.getReferencia());
+        }
+
+        try {
+            return prendaRepository.save(prenda);
+        } catch (DataIntegrityViolationException e) {
+            if (e.getMessage().contains("Duplicate entry") || e.getMessage().contains("duplicate key")) {
+                throw new RecursoYaExisteException("prenda", prenda.getReferencia(), e);
+            }
+            throw new OperacionNoPermitidaException("No se pudo registrar la prenda. Verifique que los datos sean válidos.", e);
+        }
     }
 
     /**
@@ -161,30 +208,35 @@ public class NegocioAlquiler {
 
     /**
      * Registra un nuevo servicio de alquiler.
+     *
+     * @throws RecursoNoEncontradoException si no se encuentra el cliente, empleado o alguna prenda
+     * @throws OperacionNoPermitidaException si alguna prenda no está disponible
      */
     @Transactional
     public ServicioAlquiler registrarServicioAlquiler(String clienteId, String empleadoId,
                                                      List<String> referenciasPrendas,
-                                                     LocalDate fechaAlquiler)
-            throws Exception {
+                                                     LocalDate fechaAlquiler) {
 
         // Validar que el cliente existe
         Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new Exception("Cliente no encontrado: " + clienteId));
+                .orElseThrow(() -> new RecursoNoEncontradoException("cliente", clienteId));
 
         // Validar que el empleado existe
         Empleado empleado = empleadoRepository.findById(empleadoId)
-                .orElseThrow(() -> new Exception("Empleado no encontrado: " + empleadoId));
+                .orElseThrow(() -> new RecursoNoEncontradoException("empleado", empleadoId));
 
         // Validar y obtener las prendas
         List<Prenda> prendas = new java.util.ArrayList<>();
         for (String ref : referenciasPrendas) {
             Prenda prenda = prendaRepository.findById(ref)
-                    .orElseThrow(() -> new Exception("Prenda no encontrada: " + ref));
+                    .orElseThrow(() -> new RecursoNoEncontradoException("prenda", ref));
 
             // Verificar disponibilidad
             if (!verificarDisponibilidadPrenda(ref, fechaAlquiler)) {
-                throw new Exception("Prenda no disponible para la fecha: " + ref);
+                throw new OperacionNoPermitidaException(
+                    String.format("La prenda '%s' no está disponible para la fecha %s",
+                                  ref, fechaAlquiler)
+                );
             }
 
             prendas.add(prenda);
@@ -232,11 +284,13 @@ public class NegocioAlquiler {
 
     /**
      * Registra una prenda para envío a lavandería.
+     *
+     * @throws RecursoNoEncontradoException si no se encuentra la prenda
      */
     public void registrarPrendaParaLavanderia(String referenciaPrenda, boolean esPrioridad,
-                                             String motivo) throws Exception {
+                                             String motivo) {
         Prenda prenda = prendaRepository.findById(referenciaPrenda)
-                .orElseThrow(() -> new Exception("Prenda no encontrada: " + referenciaPrenda));
+                .orElseThrow(() -> new RecursoNoEncontradoException("prenda", referenciaPrenda));
 
         if (esPrioridad) {
             lavanderiaService.registrarPrendaPrioridad(prenda, motivo);

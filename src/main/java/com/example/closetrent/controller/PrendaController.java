@@ -79,8 +79,21 @@ public class PrendaController {
             negocioAlquiler.registrarPrenda(prenda);
             redirectAttributes.addFlashAttribute("mensaje", "Prenda registrada exitosamente");
             redirectAttributes.addFlashAttribute("tipoMensaje", "success");
+        } catch (com.example.closetrent.exception.RecursoYaExisteException e) {
+            // Manejo específico para prendas duplicadas
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "La referencia '" + referencia + "' ya está registrada en el sistema. " +
+                    "Por favor, use una referencia diferente.");
+            redirectAttributes.addFlashAttribute("tipoMensaje", "warning");
+        } catch (IllegalArgumentException e) {
+            // Manejo de argumentos inválidos
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Datos inválidos: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("tipoMensaje", "warning");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensaje", "Error al registrar prenda: " + e.getMessage());
+            // Manejo de otros errores
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "No se pudo registrar la prenda. Por favor, verifique los datos e intente nuevamente.");
             redirectAttributes.addFlashAttribute("tipoMensaje", "error");
         }
         return "redirect:/prendas";

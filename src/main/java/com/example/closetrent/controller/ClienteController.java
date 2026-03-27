@@ -1,5 +1,6 @@
 package com.example.closetrent.controller;
 
+import com.example.closetrent.exception.RecursoYaExisteException;
 import com.example.closetrent.model.Cliente;
 import com.example.closetrent.service.NegocioAlquiler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,8 +44,16 @@ public class ClienteController {
             );
             redirectAttributes.addFlashAttribute("mensaje", "Cliente registrado exitosamente");
             redirectAttributes.addFlashAttribute("tipoMensaje", "success");
+        } catch (RecursoYaExisteException e) {
+            // Manejo específico para clientes duplicados
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "El número de identificación '" + cliente.getNumeroIdentificacion() +
+                    "' ya está registrado en el sistema. Por favor, verifique el número de documento.");
+            redirectAttributes.addFlashAttribute("tipoMensaje", "warning");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensaje", "Error al registrar cliente: " + e.getMessage());
+            // Manejo de otros errores
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "No se pudo registrar el cliente. Por favor, intente nuevamente.");
             redirectAttributes.addFlashAttribute("tipoMensaje", "error");
         }
         return "redirect:/clientes";
